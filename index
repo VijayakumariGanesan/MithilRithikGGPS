@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Senior Healthcare & Tele-Consultation App</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              blue: '#1E40AF',
+              lightBlue: '#EFF6FF',
+              red: '#DC2626',
+              green: '#15803D',
+              amber: '#D97706'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      font-size: 18px; /* High legibility for seniors */
+      background-color: #F3F4F6;
+    }
+    .btn-senior {
+      min-height: 52px;
+      font-weight: 700;
+    }
+    .high-contrast-card {
+      border: 2px solid #E5E7EB;
+    }
+  </style>
+</head>
+<body class="text-gray-900 pb-20">
+
+  <!-- Header Banner -->
+  <header class="bg-brand-blue text-white p-4 sticky top-0 z-50 shadow-md">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <i class="fa-solid font-bold text-3xl fa-heart-pulse text-red-400"></i>
+        <div>
+          <h1 class="text-xl font-bold leading-tight" id="app-title">Senior Care</h1>
+          <p class="text-xs text-blue-100" id="app-subtitle">Health & Tele-Consultation</p>
+        </div>
+      </div>
+      <!-- Language Switcher -->
+      <button onclick="toggleLanguage()" class="bg-white text-brand-blue font-bold px-3 py-1.5 rounded-lg shadow text-sm hover:bg-gray-100 transition">
+        <i class="fa-solid fa-language mr-1"></i>
+        <span id="lang-toggle-text">தமிழ்</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- SOS Emergency Banner -->
+  <div class="bg-red-600 text-white p-3 shadow-lg">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <i class="fa-solid fa-truck-medical text-2xl animate-bounce"></i>
+        <div>
+          <p class="font-bold text-sm" id="sos-title">Medical Emergency?</p>
+          <p class="text-xs" id="sos-desc">Instant 108 Ambulance Request</p>
+        </div>
+      </div>
+      <button onclick="triggerSOS()" class="bg-white text-red-700 font-extrabold px-4 py-2 rounded-xl shadow border-2 border-red-200 text-sm hover:bg-red-50 active:scale-95 transition">
+        <i class="fa-solid fa-phone-flip mr-1"></i> CALL 108
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="max-w-md mx-auto p-4 space-y-6">
+
+    <!-- Section 1: Senior Patient Details -->
+    <section class="bg-white p-5 rounded-2xl shadow high-contrast-card">
+      <div class="flex items-center space-x-2 border-b pb-3 mb-4">
+        <i class="fa-solid fa-id-card text-brand-blue text-xl"></i>
+        <h2 class="font-bold text-lg" id="patient-info-heading">Patient Basic Details</h2>
+      </div>
+      <form id="patient-form" onsubmit="savePatientInfo(event)" class="space-y-4">
+        <div>
+          <label class="block font-semibold text-sm mb-1" id="lbl-name">Full Name / பெயர்</label>
+          <input type="text" id="patient-name" required placeholder="e.g. Ramasamy M" class="w-full p-3 border-2 border-gray-300 rounded-xl text-base focus:border-brand-blue outline-none">
+        </div>
+        <div>
+          <label class="block font-semibold text-sm mb-1" id="lbl-mobile">Mobile Number / கைபேசி எண்</label>
+          <input type="tel" id="patient-mobile" required pattern="[0-9]{10}" placeholder="10-digit mobile number" class="w-full p-3 border-2 border-gray-300 rounded-xl text-base focus:border-brand-blue outline-none">
+        </div>
+        <div>
+          <label class="block font-semibold text-sm mb-1" id="lbl-aadhar">Aadhaar Card / ஆதார் எண்</label>
+          <input type="text" id="patient-aadhar" required pattern="[0-9]{12}" placeholder="12-digit Aadhaar number" class="w-full p-3 border-2 border-gray-300 rounded-xl text-base focus:border-brand-blue outline-none">
+          <p class="text-xs text-gray-500 mt-1" id="aadhar-note">Stored securely for emergency registration</p>
+        </div>
+        <button type="submit" class="w-full bg-brand-blue text-white btn-senior rounded-xl shadow hover:bg-blue-800 transition">
+          <i class="fa-solid fa-floppy-disk mr-2"></i><span id="btn-save-patient">Save Patient Profile</span>
+        </button>
+      </form>
+    </section>
+
+    <!-- Section 2: Diseases, Symptoms, Remedies & Medicines -->
+    <section class="bg-white p-5 rounded-2xl shadow high-contrast-card">
+      <div class="flex items-center justify-between border-b pb-3 mb-4">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-notes-medical text-brand-blue text-xl"></i>
+          <h2 class="font-bold text-lg" id="symptoms-heading">Symptoms & Remedies</h2>
+        </div>
+      </div>
+
+      <!-- Filter Buttons -->
+      <div class="flex space-x-2 mb-4">
+        <button onclick="filterDiseases('all')" id="tab-all" class="flex-1 py-2 text-xs font-bold rounded-lg bg-brand-blue text-white">All</button>
+        <button onclick="filterDiseases('infectious')" id="tab-inf" class="flex-1 py-2 text-xs font-bold rounded-lg bg-gray-200 text-gray-800">Infectious</button>
+        <button onclick="filterDiseases('chronic')" id="tab-chr" class="flex-1 py-2 text-xs font-bold rounded-lg bg-gray-200 text-gray-800">Chronic (NCD)</button>
+      </div>
+
+      <!-- Disease Search Box -->
+      <div class="mb-4">
+        <input type="text" id="disease-search" oninput="renderDiseases()" placeholder="Search symptom / நோய் தேடுக..." class="w-full p-2.5 border-2 border-gray-300 rounded-xl text-sm outline-none focus:border-brand-blue">
+      </div>
+
+      <!-- Disease Cards List -->
+      <div id="disease-list" class="space-y-4">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- Section 3: Nearby Doctor Contacts & Tele-Appointment -->
+    <section class="bg-white p-5 rounded-2xl shadow high-contrast-card">
+      <div class="flex items-center space-x-2 border-b pb-3 mb-4">
+        <i class="fa-solid fa-user-doctor text-brand-blue text-xl"></i>
+        <h2 class="font-bold text-lg" id="doctor-heading">Nearby Doctors & Tele-Consult</h2>
+      </div>
+
+      <!-- Doctor Cards -->
+      <div class="space-y-3 mb-6">
+        <!-- Doctor 1 -->
+        <div class="p-4 border-2 border-blue-100 bg-blue-50/50 rounded-xl flex items-center justify-between">
+          <div>
+            <h3 class="font-bold text-base text-brand-blue">Dr. S Satheesh Kumar</h3>
+            <p class="text-xs text-gray-600">General Physician & Senior Specialist</p>
+            <p class="text-xs text-brand-blue font-semibold mt-1"><i class="fa-solid fa-phone mr-1"></i>9486817727</p>
+          </div>
+          <a href="tel:9486817727" class="bg-brand-green text-white px-3 py-2 rounded-xl text-sm font-bold flex items-center space-x-1 hover:bg-green-800">
+            <i class="fa-solid fa-phone"></i>
+            <span id="btn-call-1">Call</span>
+          </a>
+        </div>
+
+        <!-- Doctor 2 -->
+        <div class="p-4 border-2 border-blue-100 bg-blue-50/50 rounded-xl flex items-center justify-between">
+          <div>
+            <h3 class="font-bold text-base text-brand-blue">Dr. G Vijayakumari</h3>
+            <p class="text-xs text-gray-600">Senior Care Specialist</p>
+            <p class="text-xs text-brand-blue font-semibold mt-1"><i class="fa-solid fa-phone mr-1"></i>9487667893</p>
+          </div>
+          <a href="tel:9487667893" class="bg-brand-green text-white px-3 py-2 rounded-xl text-sm font-bold flex items-center space-x-1 hover:bg-green-800">
+            <i class="fa-solid fa-phone"></i>
+            <span id="btn-call-2">Call</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Phone Appointment Form for Non-Communicable Diseases -->
+      <div class="border-t pt-4">
+        <h3 class="font-bold text-sm mb-3 text-gray-800" id="appoint-title">Book Phone Consultation (NCD / Chronic)</h3>
+        <form onsubmit="bookAppointment(event)" class="space-y-3">
+          <select id="appoint-doctor" required class="w-full p-3 border-2 border-gray-300 rounded-xl text-sm">
+            <option value="">Select Doctor / மருத்துவர் தேர்ந்தெடுக்கவும்</option>
+            <option value="Dr S Satheesh Kumar">Dr. S Satheesh Kumar (9486817727)</option>
+            <option value="Dr G Vijayakumari">Dr. G Vijayakumari (9487667893)</option>
+          </select>
+          <input type="date" id="appoint-date" required class="w-full p-3 border-2 border-gray-300 rounded-xl text-sm">
+          <textarea id="appoint-reason" rows="2" placeholder="Mention health concern (e.g. High BP, Joint Pain)" class="w-full p-3 border-2 border-gray-300 rounded-xl text-sm"></textarea>
+          <button type="submit" class="w-full bg-brand-amber text-white btn-senior rounded-xl font-bold shadow hover:bg-amber-700 transition">
+            <i class="fa-solid fa-calendar-check mr-2"></i><span id="btn-book">Confirm Phone Appointment</span>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Section 4: Competition Prize Special Feature - Audio Voice Reader -->
+    <section class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-5 rounded-2xl shadow">
+      <div class="flex items-center space-x-2 mb-2">
+        <i class="fa-solid fa-award text-yellow-400 text-2xl"></i>
+        <h2 class="font-bold text-base" id="expo-title">Expo Feature: Voice Healthcare Assistant</h2>
+      </div>
+      <p class="text-xs text-blue-200 mb-3" id="expo-desc">Designed for visually challenged elderly users. Tap below to speak out emergency instructions.</p>
+      <button onclick="speakInstructions()" class="w-full bg-yellow-400 text-gray-900 font-extrabold py-3 rounded-xl shadow flex items-center justify-center space-x-2 hover:bg-yellow-300">
+        <i class="fa-solid fa-volume-high text-lg"></i>
+        <span id="btn-voice">Read Out Emergency Instructions</span>
+      </button>
+    </section>
+
+  </main>
+
+  <!-- JavaScript Application Logic -->
+  <script>
+    // Language state: 'en' or 'ta'
+    let currentLang = 'en';
+    let activeFilter = 'all';
+
+    // Comprehensive Medical Database of Common & Chronic Ailments
+    const diseases = [
+      {
+        id: 'fever',
+        category: 'infectious',
+        isCommunicable: true,
+        en: {
+          name: 'Fever & Flu (காய்ச்சல்)',
+          symptoms: 'High body temperature, body ache, chills, weakness.',
+          remedies: 'Rest adequately, drink warm water, apply cold washcloth on forehead.',
+          tablets: 'Paracetamol 650mg (Consult doctor if fever > 102°F).',
+          diet: 'Light porridge, warm soups, tender coconut water.'
+        },
+        ta: {
+          name: 'காய்ச்சல் (Fever & Flu)',
+          symptoms: 'அதிக உடல் சூடு, உடல் வலி, குளிர்காச்சல், சோர்வு.',
+          remedies: 'நன்றாக ஓய்வெடுக்கவும், வெதுவெதுப்பான நீர் அருந்தவும்.',
+          tablets: 'பாராசிட்டமால் 650mg (மருத்துவர் ஆலோசனைப்படி).',
+          diet: 'கஞ்சி, சூடான சூப், இளநீர்.'
+        }
+      },
+      {
+        id: 'cold',
+        category: 'infectious',
+        isCommunicable: true,
+        en: {
+          name: 'Common Cold & Sore Throat (சளி / தொண்டை வலி)',
+          symptoms: 'Runny nose, sneezing, throat irritation, mild headache.',
+          remedies: 'Steam inhalation twice daily, salt water gargling.',
+          tablets: 'Cetirizine 10mg, Cough Lozenges.',
+          diet: 'Pepper soup (Rasam), warm milk with turmeric.'
+        },
+        ta: {
+          name: 'சளி & தொண்டை வலி (Cold & Throat Irritation)',
+          symptoms: 'மூக்கு ஒழுகுதல், தும்பல், தொண்டை அரிப்பு, தலைவலி.',
+          remedies: 'ஆவி பிடித்தல், வெதுவெதுப்பான உப்புக் நீரில் தொண்டை கொப்பளித்தல்.',
+          tablets: 'செடிரிசின் 10mg, தொண்டை மாத்திரைகள்.',
+          diet: 'மிளகு ரசம், மஞ்சள் கலந்த சூடான பால்.'
+        }
+      },
+      {
+        id: 'allergy',
+        category: 'infectious',
+        isCommunicable: false,
+        en: {
+          name: 'Allergies & Skin Rash (ஒவ்வாமை / தோல் அரிப்பு)',
+          symptoms: 'Skin itching, red spots, continuous sneezing.',
+          remedies: 'Avoid suspected food/dust triggers, wear loose cotton clothes.',
+          tablets: 'Cetirizine or Levocetirizine (As advised).',
+          diet: 'Avoid sea foods, fermented foods during allergy.'
+        },
+        ta: {
+          name: 'ஒவ்வாமை & தோல் அரிப்பு (Allergy)',
+          symptoms: 'தோல் அரிப்பு, சிவப்பு தடிப்புகள், தொடர்ந்து தும்பல்.',
+          remedies: 'தூசி மற்றும் ஒவ்வாமை தரும் உணவுகளைத் தவிர்க்கவும்.',
+          tablets: 'செடிரிசின் மாத்திரை (மருத்துவர் அறிவுரைப்படி).',
+          diet: 'கடல் உணவுகள் மற்றும் புளித்த உணவுகளைத் தவிர்க்கவும்.'
+        }
+      },
+      {
+        id: 'acidity',
+        category: 'infectious',
+        isCommunicable: false,
+        en: {
+          name: 'Acidity & Indigestion (அஜீரணம் / நெஞ்செரிச்சல்)',
+          symptoms: 'Heartburn, chest tightness after meals, stomach bloating.',
+          remedies: 'Avoid spicy/oily food, do not lie down immediately after eating.',
+          tablets: 'Antacid syrup, Pantoprazole 40mg (Before meal).',
+          diet: 'Buttermilk, banana, cold milk.'
+        },
+        ta: {
+          name: 'நெஞ்செரிச்சல் & அஜீரணம் (Acidity)',
+          symptoms: 'நெஞ்செரிச்சல், வயிறு உப்பசம், செரியாமை.',
+          remedies: 'காரமான மற்றும் எண்ணெய் உணவுகளைத் தவிர்க்கவும்.',
+          tablets: 'ஆன்டாசிட் சிரப், பான்டோபிரசோல் (Pantoprazole).',
+          diet: 'மோர், வாழைப்பழம், குளிர்ந்த பால்.'
+        }
+      },
+      {
+        id: 'constipation',
+        category: 'infectious',
+        isCommunicable: false,
+        en: {
+          name: 'Constipation (மலச்சிக்கல்)',
+          symptoms: 'Difficulty passing stool, abdominal pain.',
+          remedies: 'Drink at least 2.5 liters of water daily, light evening walks.',
+          tablets: 'Cremaffin syrup or Isabgol husk.',
+          diet: 'High fiber foods, papaya, green leafy vegetables.'
+        },
+        ta: {
+          name: 'மலச்சிக்கல் (Constipation)',
+          symptoms: 'மலம் கழிப்பதில் சிரமம், வயிற்று வலி.',
+          remedies: 'தினமும் 2.5 லிட்டர் தண்ணீர் குடிக்கவும், நடைபயிற்சி செய்யவும்.',
+          tablets: 'இசாப்கோல் (Isabgol) அல்லது சிரப்.',
+          diet: 'நார்ச்சத்து நிறைந்த உணவுகள், பப்பாளி, கீரைகள்.'
+        }
+      },
+      {
+        id: 'bp',
+        category: 'chronic',
+        isCommunicable: false,
+        en: {
+          name: 'High Blood Pressure / Hypertension (உயர் ரத்த அழுத்தம்)',
+          symptoms: 'Headache back of head, dizziness, blurred vision, tiredness.',
+          remedies: 'Reduce salt intake, practice slow deep breathing.',
+          tablets: 'Prescription antihypertensives (Telmisartan/Amlodipine as prescribed).',
+          diet: 'Low salt diet, garlic, fresh vegetables.'
+        },
+        ta: {
+          name: 'உயர் ரத்த அழுத்தம் (High BP)',
+          symptoms: 'தலைச்சுற்றல், பிடரி தலைவலி, சோர்வு.',
+          remedies: 'உப்பின் அளவைக் குறைக்கவும், தியானம் செய்யவும்.',
+          tablets: 'மருத்துவர் பரிந்துரைத்த ரத்த அழுத்த மாத்திரைகள்.',
+          diet: 'குறைந்த உப்பு, பூண்டு, காய்கறிகள்.'
+        }
+      },
+      {
+        id: 'diabetes',
+        category: 'chronic',
+        isCommunicable: false,
+        en: {
+          name: 'Type-2 Diabetes (சர்க்கரை நோய்)',
+          symptoms: 'Frequent urination, excessive thirst, delayed wound healing.',
+          remedies: 'Regular 30-min walking, monitor blood sugar weekly.',
+          tablets: 'Metformin / Glimepiride (Strictly as prescribed by physician).',
+          diet: 'Bitter gourd, millets, avoid refined sugars/sweets.'
+        },
+        ta: {
+          name: 'சர்க்கரை நோய் (Diabetes)',
+          symptoms: 'அடிக்கடி சிறுநீர் கழித்தல், அதிக தாகம், சோர்வு.',
+          remedies: 'தினமும் 30 நிமிடம் நடைபயிற்சி, வாரம் ஒருமுறை ரத்த சர்க்கரை பரிசோதனை.',
+          tablets: 'மருத்துவர் குறிப்பிட்ட சர்க்கரை மாத்திரைகள்.',
+          diet: 'சிறுதானியங்கள், பாகற்காய், இனிப்புகளைத் தவிர்க்கவும்.'
+        }
+      },
+      {
+        id: 'arthritis',
+        category: 'chronic',
+        isCommunicable: false,
+        en: {
+          name: 'Arthritis & Joint Pain (மூட்டு வலி)',
+          symptoms: 'Knee joint stiffness, swelling, difficulty climbing stairs.',
+          remedies: 'Warm compress on knees, mild stretching, avoid squatting.',
+          tablets: 'Calcium + Vitamin D3 supplements, Pain relief gel.',
+          diet: 'Drumstick leaves, milk, sesame seeds.'
+        },
+        ta: {
+          name: 'மூட்டு வலி & வாதம் (Arthritis)',
+          symptoms: 'மூட்டுகளில் வீக்கம், படிக்கட்டுகளில் ஏற சிரமம்.',
+          remedies: 'வெதுவெதுப்பான ஒத்தடம் கொடுக்கவும், லேசான உடற்பயிற்சி.',
+          tablets: 'கால்சியம் மாத்திரைகள், வலி நிவாரண ஜெல்.',
+          diet: 'முருங்கைக் கீரை, பால், எள்.'
+        }
+      },
+      {
+        id: 'asthma',
+        category: 'chronic',
+        isCommunicable: false,
+        en: {
+          name: 'Asthma & Wheezing (ஆஸ்துமா / மூச்சுத்திணறல்)',
+          symptoms: 'Shortness of breath, chest tightness, wheezing sound.',
+          remedies: 'Stay away from cold air, smoke, and dust.',
+          tablets: 'Inhaler prescribed by doctor.',
+          diet: 'Warm herbal tea, ginger water.'
+        },
+        ta: {
+          name: 'ஆஸ்துமா & மூச்சுத்திணறல் (Asthma)',
+          symptoms: 'மூச்சு விடுவதில் சிரமம், மார்பு பிடிப்பு.',
+          remedies: 'குளிர்ந்த காற்று மற்றும் புகையைத் தவிர்க்கவும்.',
+          tablets: 'மருத்துவர் பரிந்துரைத்த இன்ஹேலர் (Inhaler).',
+          diet: 'இஞ்சி தண்ணீர், சூடான மூலிகை தேனீர்.'
+        }
+      }
+    ];
+
+    // Language Content Dictionary
+    const contentData = {
+      en: {
+        appTitle: "Senior Care",
+        appSubtitle: "Health & Tele-Consultation",
+        sosTitle: "Medical Emergency?",
+        sosDesc: "Instant 108 Ambulance Request",
+        patientHeading: "Patient Basic Details",
+        lblName: "Full Name",
+        lblMobile: "Mobile Number",
+        lblAadhar: "Aadhaar Card",
+        aadharNote: "Stored securely for emergency registration",
+        btnSave: "Save Patient Profile",
+        symptomsHeading: "Symptoms & Remedies",
+        doctorHeading: "Nearby Doctors & Tele-Consult",
+        btnCall: "Call",
+        appointTitle: "Book Phone Consultation (NCD / Chronic)",
+        btnBook: "Confirm Phone Appointment",
+        expoTitle: "Expo Feature: Voice Healthcare Assistant",
+        expoDesc: "Designed for visually challenged elderly users. Tap below to speak out emergency instructions.",
+        btnVoice: "Read Out Emergency Instructions",
+        bookModalSuccess: "Phone consultation request sent successfully to doctor!",
+        saveModalSuccess: "Patient Profile saved successfully!"
+      },
+      ta: {
+        appTitle: "முதியோர் நலன்",
+        appSubtitle: "மருத்துவ உதவி & ஆலோசனை",
+        sosTitle: "அவசர மருத்துவ தேவையா?",
+        sosDesc: "உடனடி 108 ஆம்புலன்ஸ் சேவை",
+        patientHeading: "நோயாளி அடிப்படை விவரங்கள்",
+        lblName: "முழு பெயர்",
+        lblMobile: "கைபேசி எண்",
+        lblAadhar: "ஆதார் எண்",
+        aadharNote: "அவசர தேவைக்காக பாதுகாப்பாக சேமிக்கப்படும்",
+        btnSave: "விவரங்களை சேமிக்கவும்",
+        symptomsHeading: "நோய்கள், அறிகுறிகள் & மருந்துகள்",
+        doctorHeading: "அருகிலுள்ள மருத்துவர்கள் & தொலைபேசி ஆலோசனை",
+        btnCall: "அழைக்க",
+        appointTitle: "தொலைபேசி மருத்துவ ஆலோசனை பதிவு (தொற்றா நோய்கள்)",
+        btnBook: "ஆலோசனையை உறுதிசெய்யவும்",
+        expoTitle: "சிறப்பு அம்சம்: குரல் வழி வழிகாட்டி",
+        expoDesc: "பார்வை சவால்கள் உள்ள முதியோருக்கான பிரத்யேக ஒலி வழிகாட்டி.",
+        btnVoice: "அவசர வழிமுறைகளை உரக்கப் படிக்கவும்",
+        bookModalSuccess: "மருத்துவ ஆலோசனைக் கோரிக்கை வெற்றிபெற்றது!",
+        saveModalSuccess: "நோயாளி விவரங்கள் சேமிக்கப்பட்டன!"
+      }
+    };
+
+    // Initialize UI on Load
+    window.onload = function() {
+      loadSavedPatient();
+      renderDiseases();
+    };
+
+    // Toggle Language
+    function toggleLanguage() {
+      currentLang = (currentLang === 'en') ? 'ta' : 'en';
+      document.getElementById('lang-toggle-text').innerText = (currentLang === 'en') ? 'தமிழ்' : 'English';
+      
+      const text = contentData[currentLang];
+      document.getElementById('app-title').innerText = text.appTitle;
+      document.getElementById('app-subtitle').innerText = text.appSubtitle;
+      document.getElementById('sos-title').innerText = text.sosTitle;
+      document.getElementById('sos-desc').innerText = text.sosDesc;
+      document.getElementById('patient-info-heading').innerText = text.patientHeading;
+      document.getElementById('lbl-name').innerText = text.lblName;
+      document.getElementById('lbl-mobile').innerText = text.lblMobile;
+      document.getElementById('lbl-aadhar').innerText = text.lblAadhar;
+      document.getElementById('aadhar-note').innerText = text.aadharNote;
+      document.getElementById('btn-save-patient').innerText = text.btnSave;
+      document.getElementById('symptoms-heading').innerText = text.symptomsHeading;
+      document.getElementById('doctor-heading').innerText = text.doctorHeading;
+      document.getElementById('btn-call-1').innerText = text.btnCall;
+      document.getElementById('btn-call-2').innerText = text.btnCall;
+      document.getElementById('appoint-title').innerText = text.appointTitle;
+      document.getElementById('btn-book').innerText = text.btnBook;
+      document.getElementById('expo-title').innerText = text.expoTitle;
+      document.getElementById('expo-desc').innerText = text.expoDesc;
+      document.getElementById('btn-voice').innerText = text.btnVoice;
+
+      renderDiseases();
+    }
+
+    // Filter Diseases
+    function filterDiseases(cat) {
+      activeFilter = cat;
+      document.getElementById('tab-all').className = cat === 'all' ? 'flex-1 py-2 text-xs font-bold rounded-lg bg-brand-blue text-white' : 'flex-1 py-2 text-xs font-bold rounded-lg bg-gray-200 text-gray-800';
+      document.getElementById('tab-inf').className = cat === 'infectious' ? 'flex-1 py-2 text-xs font-bold rounded-lg bg-brand-blue text-white' : 'flex-1 py-2 text-xs font-bold rounded-lg bg-gray-200 text-gray-800';
+      document.getElementById('tab-chr').className = cat === 'chronic' ? 'flex-1 py-2 text-xs font-bold rounded-lg bg-brand-blue text-white' : 'flex-1 py-2 text-xs font-bold rounded-lg bg-gray-200 text-gray-800';
+      renderDiseases();
+    }
+
+    // Render Dynamic Disease Cards
+    function renderDiseases() {
+      const container = document.getElementById('disease-list');
+      const searchQuery = document.getElementById('disease-search').value.toLowerCase();
+      container.innerHTML = '';
+
+      const filtered = diseases.filter(d => {
+        const matchesFilter = (activeFilter === 'all') || (d.category === activeFilter);
+        const data = d[currentLang];
+        const matchesSearch = data.name.toLowerCase().includes(searchQuery) || data.symptoms.toLowerCase().includes(searchQuery);
+        return matchesFilter && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<p class="text-sm text-gray-500 text-center py-4">No matching symptoms found.</p>`;
+        return;
+      }
+
+      filtered.forEach(d => {
+        const info = d[currentLang];
+        const isChronic = !d.isCommunicable;
+
+        const card = document.createElement('div');
+        card.className = "border-2 border-gray-200 rounded-xl p-4 bg-gray-50 hover:bg-white transition space-y-2";
+        
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-base text-brand-blue">${info.name}</h3>
+            <span class="text-xs px-2 py-0.5 rounded font-semibold ${isChronic ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">
+              ${isChronic ? (currentLang === 'en' ? 'Non-Communicable' : 'தொற்றா நோய்') : (currentLang === 'en' ? 'Communicable' : 'தொற்று நோய்')}
+            </span>
+          </div>
+          <p class="text-xs text-gray-700"><strong><i class="fa-solid fa-stethoscope mr-1"></i>Symptoms:</strong> ${info.symptoms}</p>
+          <p class="text-xs text-green-800"><strong><i class="fa-solid fa-house-medical mr-1"></i>Remedies:</strong> ${info.remedies}</p>
+          <p class="text-xs text-blue-900"><strong><i class="fa-solid fa-pills mr-1"></i>Suggested OTC Tablets:</strong> ${info.tablets}</p>
+          <p class="text-xs text-purple-900"><strong><i class="fa-solid fa-utensils mr-1"></i>Diet Advice:</strong> ${info.diet}</p>
+          ${isChronic ? `
+            <div class="pt-2">
+              <button onclick="scrollToAppointment('${info.name}')" class="w-full bg-amber-600 text-white text-xs py-2 rounded-lg font-bold hover:bg-amber-700 transition flex items-center justify-center space-x-1">
+                <i class="fa-solid fa-phone-volume"></i>
+                <span>${currentLang === 'en' ? 'Book Phone Consultation with Doctor' : 'மருத்துவ ஆலோசனை பெற பதிவு செய்'}</span>
+              </button>
+            </div>
+          ` : ''}
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Trigger SOS Call
+    function triggerSOS() {
+      if (confirm(currentLang === 'en' ? "Call Emergency 108 Ambulance now?" : "108 ஆம்புலன்ஸ் சேவைக்கு அழைக்கவா?")) {
+        window.location.href = "tel:108";
+      }
+    }
+
+    // Save Patient Profile to LocalStorage
+    function savePatientInfo(e) {
+      e.preventDefault();
+      const patient = {
+        name: document.getElementById('patient-name').value,
+        mobile: document.getElementById('patient-mobile').value,
+        aadhar: document.getElementById('patient-aadhar').value
+      };
+      localStorage.setItem('senior_patient_data', JSON.stringify(patient));
+      alert(contentData[currentLang].saveModalSuccess);
+    }
+
+    // Load Saved Patient Info
+    function loadSavedPatient() {
+      const saved = localStorage.getItem('senior_patient_data');
+      if (saved) {
+        const patient = JSON.parse(saved);
+        document.getElementById('patient-name').value = patient.name || '';
+        document.getElementById('patient-mobile').value = patient.mobile || '';
+        document.getElementById('patient-aadhar').value = patient.aadhar || '';
+      }
+    }
+
+    // Scroll to Doctor Appointment Section
+    function scrollToAppointment(diseaseName) {
+      document.getElementById('appoint-reason').value = diseaseName;
+      document.getElementById('doctor-heading').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Book Phone Appointment
+    function bookAppointment(e) {
+      e.preventDefault();
+      const doc = document.getElementById('appoint-doctor').value;
+      const date = document.getElementById('appoint-date').value;
+      const reason = document.getElementById('appoint-reason').value;
+
+      alert(`${contentData[currentLang].bookModalSuccess}\n\nDoctor: ${doc}\nDate: ${date}\nReason: ${reason}`);
+    }
+
+    // Text to Speech Voice Reader for Visually Challenged Seniors
+    function speakInstructions() {
+      if ('speechSynthesis' in window) {
+        const text = currentLang === 'en' 
+          ? "Welcome to Senior Care App. For medical emergencies press the top red button to call 108 ambulance immediately. Doctors Satheesh Kumar and Vijayakumari are available for phone consultations."
+          : "முதியோர் மருத்துவ உதவி செயலிற்கு நல்வரவு. அவசர தேவைக்கு மேலே உள்ள சிவப்பு நிற பொத்தானை அழுத்தி 108 ஆம்புலன்ஸை அழைக்கலாம்.";
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.9; // Slower rate for elderly clarity
+        utterance.lang = currentLang === 'en' ? 'en-US' : 'ta-IN';
+        window.speechSynthesis.speak(utterance);
+      } else {
+        alert("Voice synthesis is not supported on this browser.");
+      }
+    }
+  </script>
+</body>
+</html>
